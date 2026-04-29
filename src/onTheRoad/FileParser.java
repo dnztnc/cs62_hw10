@@ -43,9 +43,14 @@ public class FileParser {
 
 			for (int count = 0; count < numSegments; count++) {
 				line = getDataLine(input);
-				segments.add(new Segment(line));
+				Segment s = new Segment(line);
+				if (s.getStart() < 0 || s.getStart() >= numLocations || s.getEnd() < 0 || s.getEnd() >= numLocations) {
+					System.out.println("Illegal segment with endpoints not in [0, " + (numLocations - 1) + "]: " + s);
+					System.exit(1);
+				}
+				segments.add(s);
 			}
-			// TO DO: Make sure all segments are legal, i.e., startIndex
+			// Make sure all segments are legal, i.e., startIndex
 			// and endIndex are legal for vertices.
 
 			// get trip requests
@@ -111,12 +116,19 @@ public class FileParser {
 	 */
 	public EdgeWeightedDigraph makeGraph(boolean isDistance) {
 
-		//FIX THIS!
-
-		return null;
-
-		//Create a new weighted digraph and populate it with edges based on the segments
-	}
+		EdgeWeightedDigraph g = new EdgeWeightedDigraph(vertices.size());
+			for (Segment s : segments) {
+				double weight;
+				if (isDistance) {
+					weight = s.getDistance();
+				} else {
+					weight = s.getDistance() / s.getSpeed();
+				}
+				g.addEdge(new DirectedEdge(s.getStart(), s.getEnd(), weight));
+				}
+		return g;
+			//Create a new weighted digraph and populate it with edges based on the segments
+		}
 
 
 	// testing code for file parser

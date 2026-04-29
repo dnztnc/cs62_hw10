@@ -26,19 +26,30 @@ public class TripRequest {
 	 * 	A list of vertices of the graph so can look up label of nodes.
 	 */
 	public TripRequest(String req, List<String> vertices) {
-		// TO DO: Check input to make sure it has requisite number of
-		// pieces, that the indices are legal, and tag letter is "D" or "T"
-		String[] reqPieces = req.split(" ");
-		
+		String[] reqPieces = req.trim().split("\\s+");
+
+		if (reqPieces.length != 3) {
+			throw new IllegalArgumentException("Trip request must have 3 pieces");
+		}
+
 		// index of start node
 		start = Integer.parseInt(reqPieces[0]);
-		
+
 		// index of end node
 		end = Integer.parseInt(reqPieces[1]);
-		
+
+		int n = vertices.size();
+		if (start < 0 || start >= n || end < 0 || end >= n) {
+			throw new IllegalArgumentException("Trip request has out-of-range index");
+		}
+		if (!reqPieces[2].equals("D") && !reqPieces[2].equals("T")) {
+			throw new IllegalArgumentException(
+					"Trip request tag must be \"D\" or \"T\": \"" + req + "\"");
+		}
+
 		// true iff optimize by distance
 		isDistance = reqPieces[2].equals("D");
-	}
+	}	
 	
 	/**
 	 * @return index of starting node for trip

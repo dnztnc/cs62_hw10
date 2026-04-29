@@ -3,6 +3,8 @@ package onTheRoad;
 /**
  * Common algorithms for Graphs. 
  * They all assume working with a EdgeWeightedDirected graph.
+ * 
+ * @author Deniz Tanaci
  */
 
 import java.util.ArrayDeque;
@@ -187,7 +189,7 @@ public class GraphAlgorithms {
 			
 				System.out.print("Continue to " + vertices.get(e.to()));
 				if (isDistance) {
-					System.out.println(" (" + e.weight() + ")");
+					System.out.println(" (" + e.weight() + " miles)");
 				} else {
 					System.out.println(" (" + hoursToHMS(e.weight()) + ")");
 				}
@@ -209,8 +211,8 @@ public class GraphAlgorithms {
 	 *         10th of a second)
 	 */
 	private static String hoursToHMS(double rawhours) {
-		double hours = Math.floor(rawhours);
-		double minutes = Math.floor((rawhours - hours) * 60);
+		int hours = (int) Math.floor(rawhours);
+		int minutes = (int) Math.floor((rawhours - hours) * 60);
 		double seconds = Math.round(((rawhours - hours) * 60 - minutes) * 60 * 10) / 10.0;
 		if (hours==0) {
 			if (minutes == 0) {
