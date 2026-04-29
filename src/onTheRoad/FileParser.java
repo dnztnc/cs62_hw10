@@ -57,10 +57,14 @@ public class FileParser {
 			line = getDataLine(input);
 			int numTrips = Integer.parseInt(line);
 
-			for (int count = 0; count < numTrips; count++) {
-				line = getDataLine(input);
+		for (int count = 0; count < numTrips; count++) {
+			line = getDataLine(input);
+			try {
 				trips.add(new TripRequest(line, vertices));
+			} catch (IllegalArgumentException ex) {
+				System.out.println("Skipping invalid trip request: " + ex.getMessage());
 			}
+		}
 
 			input.close();
 		} catch (IOException e) {
