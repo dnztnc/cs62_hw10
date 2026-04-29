@@ -22,7 +22,13 @@ public class GraphAlgorithms {
 	 */
 	public static EdgeWeightedDigraph graphEdgeReversal(EdgeWeightedDigraph g) {
 		// FIX THIS!
-		return null;
+		EdgeWeightedDigraph reversed = new EdgeWeightedDigraph(g.V());
+		for (int v = 0; v < g.V(); v++) {
+			for (DirectedEdge e : g.adj(v)) {
+				reversed.addEdge(new DirectedEdge(e.to(), e.from(), e.weight()));
+			}
+		}
+		return reversed;
 	}
 
 	/**
@@ -35,7 +41,20 @@ public class GraphAlgorithms {
 	 */
 	public static void breadthFirstSearch(EdgeWeightedDigraph g, int start) {
 		//reset graph so that no vertex starts marked as visited
-		// FIX THIS! 		
+		g.reset();
+		//create a queue for breadth-first search
+		Deque<Integer> queue = new ArrayDeque<Integer>();
+		//mark start as visited and add it to the queue
+		g.visit(new DirectedEdge(start, start, 0), 0);
+		queue.add(start);
+		//while the queue is not empty, remove the first vertex and add all of its unvisited neighbors to the queue
+		while (!queue.isEmpty()) {
+			int v = queue.remove();
+			for (DirectedEdge e : g.adj(v)) {
+				if (!g.isVisited(e.to())) {
+					g.visit(e, g.getDist(v) + e.weight());
+					queue.add(e.to());
+				}}}	
 	}
 
 	/**
@@ -48,13 +67,26 @@ public class GraphAlgorithms {
 	public static boolean isStronglyConnected(EdgeWeightedDigraph g) {
 		// do breadth-first search from start and make sure all vertices
 		// have been visited. If not, return false.
-		
-		
+		if (g.V() == 0) {
+			return true;
+		}
+		int start = 0;
+		breadthFirstSearch(g, start);
+		for (int v = 0; v < g.V(); v++) {
+			if (!g.isVisited(v)) {
+				return false;
+			}
+		}
 		// now reverse the graph, do another breadth-first search,
 		// and make sure all visited again. If not, return false
-
-		//FIX THIS!
-		return false;
+		EdgeWeightedDigraph reversed = graphEdgeReversal(g);
+		breadthFirstSearch(reversed, start);
+		for (int v = 0; v < reversed.V(); v++) {
+			if (!reversed.isVisited(v)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -71,10 +103,36 @@ public class GraphAlgorithms {
 	 */
 	public static HashMap<Integer, ArrayList<DirectedEdge>> dijkstra(EdgeWeightedDigraph g, int s) {
 		//reset graph
-		
-		
-		// FIX THIS!
-		return null;
+		g.reset();
+		HashMap<Integer, ArrayList<DirectedEdge>> myhashmap = new HashMap<Integer, ArrayList<DirectedEdge>>();
+		IndexMinPQ<Double> pq = new IndexMinPQ<Double>(g.V());
+		g.visit(new DirectedEdge(s, s, 0), 0);
+		pq.insert(s, 0.0);
+		while (!pq.isEmpty()) {
+			int v = pq.delMin();
+			for (DirectedEdge e : g.adj(v)) {
+				if (!g.isVisited(e.to()) || g.getDist(e.to()) > g.getDist(v) + e.weight()) {
+					g.visit(e, g.getDist(v) + e.weight());
+					if (pq.contains(e.to())) {
+						pq.changeKey(e.to(), g.getDist(e.to()));
+					} else {
+						pq.insert(e.to(), g.getDist(e.to()));
+					}
+				}
+			}
+		}
+		for (int v = 0; v < g.V(); v++) {
+			ArrayList<DirectedEdge> path = new ArrayList<DirectedEdge>();
+			if (g.isVisited(v)) {
+				for (DirectedEdge e = g.getEdgeTo(v); e != null && e.from() != e.to(); e = g.getEdgeTo(e.from())) {
+					path.add(0, e);
+				}
+			}
+			myhashmap.put(v, path);
+		}
+		return myhashmap;
+
+
 	}
 
 	/**
@@ -90,9 +148,7 @@ public class GraphAlgorithms {
 	 */
 	public static ArrayList<DirectedEdge> getShortestPath(EdgeWeightedDigraph g, int start, int end) {
 		// run dijkstra and create a new ArrayList with edges running from start to end.
-
-		// FIX THIS!
-		return null;
+		return dijkstra(g, start).get(end);
 	}
 
 	/**
@@ -101,10 +157,47 @@ public class GraphAlgorithms {
 	 * 
 	 * @param path shortest path from start to end
 	 * @param isDistance prints it based on distance (true) or time (false)
+	 * 
+	 * Example:
+	 * (isDistance = true)
+	 *  Begin at Irvine
+		Continue to Chino Hills (1.0)
+		Continue to Claremont (2.0)
+		Total distance: 3.0 miles
+
+		(isDistance = false)
+		Begin at Irvine
+		Continue to Chino Hills (1 hours 0 minutes 0.0 seconds)
+		Continue to Claremont (2 hours 0 minutes 0.0 seconds)
+		Total time: 3 hours 0 minutes 0.0 seconds
 	 */
 	public static void printShortestPath(ArrayList<DirectedEdge> path, boolean isDistance, List<String> vertices) {
-		// FIX THIS!
 		// Hint: Look into TestGraphs for format of printout
+		if (path == null) {
+			System.out.println("No path exists.");
+			return;
+		}
+		double total = 0;
+		for (int i = 0; i < path.size(); i++) {
+			DirectedEdge e = path.get(i);
+			if (i == 0) {
+				System.out.println("Begin at " + vertices.get(e.from()));
+
+			}
+			
+				System.out.print("Continue to " + vertices.get(e.to()));
+				if (isDistance) {
+					System.out.println(" (" + e.weight() + ")");
+				} else {
+					System.out.println(" (" + hoursToHMS(e.weight()) + ")");
+				}
+			total += e.weight();
+	}
+		if (isDistance) {
+			System.out.println("Total distance: " + total + " miles");
+		} else {
+			System.out.println("Total time: " + hoursToHMS(total));
+		}
 	}
 
 	/**
@@ -116,7 +209,16 @@ public class GraphAlgorithms {
 	 *         10th of a second)
 	 */
 	private static String hoursToHMS(double rawhours) {
-		// FIX THIS!
-		return null;
-	}
+		double hours = Math.floor(rawhours);
+		double minutes = Math.floor((rawhours - hours) * 60);
+		double seconds = Math.round(((rawhours - hours) * 60 - minutes) * 60 * 10) / 10.0;
+		if (hours==0) {
+			if (minutes == 0) {
+				return (seconds + " secs");
+			}  
+			else {
+				return (minutes + " mins " + seconds + " secs");}
+		}
+		return (hours+ " hrs " + minutes + " mins " + seconds + " secs");
+}
 }
